@@ -7,6 +7,7 @@
 <title>Eko Hangout · Live Lagos</title>
 <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22Eko%20Hangout%22%2C%22short_name%22%3A%22Eko%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2308060f%22%2C%22theme_color%22%3A%22%2308060f%22%7D">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
   :root{
@@ -404,11 +405,15 @@
       <div class="auth-header">
         <div class="auth-logo"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
         <h2>Welcome to Eko Hangout</h2>
-        <p>Sign in or create your account to start earning, buying houses, and living Lagos.</p>
+        <p>Sign in with Google, or use a username and password.</p>
       </div>
       <div class="auth-body">
         <div class="auth-section">
-          <div class="auth-section-title">Sign in</div>
+          <div class="auth-section-title">Continue with Google</div>
+          <div id="googleButton" style="display:flex;justify-content:center;min-height:44px"></div>
+        </div>
+        <div class="auth-section">
+          <div class="auth-section-title">Or sign in</div>
           <input class="auth-input" id="loginId" placeholder="Username or email" autocomplete="username">
           <input class="auth-input" id="loginPw" type="password" placeholder="Password" autocomplete="current-password">
           <button class="auth-btn primary" id="loginBtn" type="button">
@@ -420,10 +425,10 @@
           <div class="auth-section-title">New here?</div>
           <button class="auth-btn" id="showSignupBtn" type="button">
             <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            Create new account
+            Create account with username
           </button>
         </div>
-        <div class="auth-note">Your account is protected with a password. Keep it safe.</div>
+        <div class="auth-note">Google sign-in keeps your progress across devices.</div>
       </div>
     </div>
   </div>
@@ -461,9 +466,7 @@
         <div class="st"><span class="val" id="spotsCount">0</span><span class="lbl">Spots</span></div>
       </div>
     </div>
-
     <div id="broadcastArea"></div>
-
     <div class="potd" id="potdCard">
       <div class="potd-icon"><svg viewBox="0 0 24 24"><path d="M12 2l2.09 6.26L20 9l-5 4.87L16.18 21 12 17.27 7.82 21 9 13.87 4 9l5.91-.74z"/></svg></div>
       <div class="info">
@@ -473,9 +476,7 @@
       </div>
       <svg class="arrow" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
     </div>
-
     <div id="contactAdminBanner"></div>
-
     <div class="cats" id="catsBar"></div>
     <div class="sh"><h2 id="gridHeading">All Spots</h2><div class="live-tag"><span class="d"></span>live</div></div>
     <div class="spots" id="spotsGrid"></div>
@@ -491,7 +492,6 @@
       </div>
       <button class="share-btn" id="shareRoomBtn" type="button"><svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>SHARE</button>
     </div>
-
     <div class="room-tabs">
       <button class="room-tab active" data-pane="chat" type="button">Chat</button>
       <button class="room-tab" data-pane="jobs" type="button">Jobs</button>
@@ -499,7 +499,6 @@
       <button class="room-tab" data-pane="photos" type="button">Photos</button>
       <button class="room-tab" data-pane="events" type="button">Events</button>
     </div>
-
     <div class="room-pane active" id="pane-chat">
       <div class="members" id="members"></div>
       <div class="chat-area">
@@ -514,12 +513,10 @@
         </div>
       </div>
     </div>
-
     <div class="room-pane" id="pane-jobs">
       <div class="pane-actions"><button id="refreshJobsBtn" type="button">Refresh jobs</button></div>
       <div class="qa-list" id="jobsList"></div>
     </div>
-
     <div class="room-pane" id="pane-qa"><div class="pane-actions"><button id="askBtn" type="button">Ask a question</button></div><div class="qa-list" id="qaList"></div></div>
     <div class="room-pane" id="pane-photos"><div class="pane-actions"><button id="uploadPhotoBtn" type="button">Upload photo</button></div><div class="photo-grid" id="photoGrid"></div></div>
     <div class="room-pane" id="pane-events"><div class="pane-actions"><button id="createEventBtn" type="button">Create event</button></div><div class="events-list" id="eventsList"></div></div>
@@ -618,11 +615,11 @@
 
   var SUPABASE_URL = "https://gkwrpkyowhlhyivgeivt.supabase.co";
   var SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrd3Jwa3lvd2hsaHlpdmdlaXZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExNDcwNjEsImV4cCI6MjEwNjcyMzA2MX0.FC7u4hPprknWxS0kGK8jzdEZ__GYFJwdklHGiMpFxjY";
+  var GOOGLE_CLIENT = "632669758983-uv6por1mn91fhcal9qscp7kna0ibji0k.apps.googleusercontent.com";
 
   var ADMIN_EMAIL = "imanuelxavier8@gmail.com";
   var ADMIN_USERNAME = "fearlessffx";
-  var ADMIN_NAME = "Fearless";
-  var ADMIN_PASSWORD = "imanuelxavier123";
+  var ADMIN_NAME = "fearless";
   var WHATSAPP_ADMIN = "2349137895828";
 
   var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -815,7 +812,8 @@
     _dmPeer:null,
     _hospitalized:false,
     newsIdx:0,
-    newsTimer:null
+    newsTimer:null,
+    _pendingGoogle:null
   };
 
   function $(id){ return document.getElementById(id); }
@@ -856,7 +854,72 @@
     });
   }
 
-  /* AUTH */
+  /* ============ GOOGLE ============ */
+  function initGoogle(){
+    if (typeof google === 'undefined' || !google.accounts){
+      setTimeout(initGoogle, 400);
+      return;
+    }
+    try {
+      google.accounts.id.initialize({ client_id: GOOGLE_CLIENT, callback: onGoogleCredential });
+      var btn = document.getElementById('googleButton');
+      if (btn){
+        google.accounts.id.renderButton(btn, { theme:'filled_black', size:'large', shape:'pill', text:'continue_with', width:300 });
+      }
+    } catch(e){ console.warn('Google init failed', e); }
+  }
+
+  function parseJwt(t){
+    try {
+      var b = t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+      return JSON.parse(decodeURIComponent(atob(b).split('').map(function(c){ return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join('')));
+    } catch(e){ return null; }
+  }
+
+  async function onGoogleCredential(resp){
+    try {
+      var p = parseJwt(resp.credential);
+      if (!p){ toast('Google sign-in failed','err'); return; }
+      var gid = p.sub;
+      var email = (p.email || '').toLowerCase();
+      var picture = p.picture || '';
+      var gname = p.given_name || p.name || '';
+
+      var { data: existing } = await sb.from('profiles').select('*').or('id.eq.' + gid + ',email.eq.' + email).limit(1);
+
+      if (existing && existing.length){
+        var prof = existing[0];
+        if (prof.is_banned){ toast('Account banned: ' + (prof.ban_reason||''),'err'); return; }
+        S.me.id = prof.id;
+        S.me.name = prof.name || gname || 'User';
+        S.me.username = prof.username || '';
+        S.me.email = email;
+        S.me.avatar = prof.avatar || 'av-purple';
+        S.me.pic = picture || prof.pic || '';
+        S.me.is_admin = !!prof.is_admin ||
+          (email === ADMIN_EMAIL) ||
+          ((prof.username||'').toLowerCase() === ADMIN_USERNAME) ||
+          ((prof.name||'').toLowerCase() === ADMIN_NAME);
+        saveUser();
+        toast('Welcome back, ' + S.me.name + (S.me.is_admin ? ' (admin)' : ''),'ok');
+        await initSession();
+        return;
+      }
+
+      S._pendingGoogle = { gid:gid, email:email, picture:picture, gname:gname };
+      toast('Pick a username to finish signup','info');
+      showView('signup');
+      renderAvatarPicker();
+      setTimeout(function(){
+        var em = document.getElementById('suEmail');
+        if (em) em.value = email;
+        var nm = document.getElementById('suName');
+        if (nm && gname) nm.value = gname.substring(0,16);
+      }, 100);
+    } catch(e){ console.error(e); toast('Google sign-in error','err'); }
+  }
+
+  /* ============ AUTH ============ */
   function attachAuthHandlers(){
     var loginBtn = document.getElementById('loginBtn');
     var loginId = document.getElementById('loginId');
@@ -872,26 +935,29 @@
       var id = (loginId.value||'').trim().toLowerCase();
       var pw = (loginPw.value||'');
       if (!id || !pw){ toast('Enter username/email and password','err'); return; }
-      var pwHash = await sha256(pw);
+      loginBtn.disabled = true; var oldText = loginBtn.textContent; loginBtn.textContent = 'Signing in...';
       try {
-        var { data } = await sb.from('profiles').select('*').or('username.eq.'+id+',email.eq.'+id).limit(1);
-        if (!data || !data.length){ toast('Account not found','err'); return; }
+        var pwHash = await sha256(pw);
+        var { data, error } = await sb.from('profiles').select('*').or('username.eq.' + id + ',email.eq.' + id).limit(1);
+        if (error){ toast('Login error: ' + error.message,'err'); loginBtn.disabled=false; loginBtn.textContent=oldText; return; }
+        if (!data || !data.length){ toast('Account not found','err'); loginBtn.disabled=false; loginBtn.textContent=oldText; return; }
         var p = data[0];
-        if (p.is_banned){ toast('Account banned: ' + (p.ban_reason||''),'err'); return; }
-        if (!p.password_hash){ toast('Account has no password — contact admin','err'); return; }
-        if (p.password_hash !== pwHash){ toast('Wrong password','err'); return; }
+        if (p.is_banned){ toast('Account banned: ' + (p.ban_reason||''),'err'); loginBtn.disabled=false; loginBtn.textContent=oldText; return; }
+        if (!p.password_hash){ toast('This account uses Google. Tap Continue with Google.','err'); loginBtn.disabled=false; loginBtn.textContent=oldText; return; }
+        if (p.password_hash !== pwHash){ toast('Wrong password','err'); loginBtn.disabled=false; loginBtn.textContent=oldText; return; }
         S.me.id = p.id; S.me.name = p.name; S.me.username = p.username;
         S.me.email = p.email || ''; S.me.avatar = p.avatar; S.me.pic = p.pic || '';
         S.me.is_admin = !!p.is_admin;
         saveUser();
         toast('Welcome back, ' + p.name + (S.me.is_admin ? ' (admin)' : ''),'ok');
+        loginBtn.disabled=false; loginBtn.textContent=oldText;
         await initSession();
-      } catch(e){ toast('Login error: ' + (e.message||''),'err'); }
+      } catch(e){ toast('Login failed: ' + (e.message||''),'err'); loginBtn.disabled=false; loginBtn.textContent=oldText; }
     };
     loginId.addEventListener('keydown', function(e){ if (e.key==='Enter') loginPw.focus(); });
     loginPw.addEventListener('keydown', function(e){ if (e.key==='Enter') loginBtn.click(); });
 
-    if (showSignupBtn) showSignupBtn.onclick = function(){ showView('signup'); renderAvatarPicker(); };
+    if (showSignupBtn) showSignupBtn.onclick = function(){ S._pendingGoogle = null; showView('signup'); renderAvatarPicker(); };
     if (backToLoginBtn) backToLoginBtn.onclick = function(){ showView('auth'); };
 
     if (signupBtn) signupBtn.onclick = async function(){
@@ -900,29 +966,31 @@
       var em = (document.getElementById('suEmail').value||'').trim().toLowerCase();
       var pw = (document.getElementById('suPass').value||'');
       if (!n){ toast('Enter display name','err'); return; }
-      if (u.length < 3){ toast('Username too short','err'); return; }
+      if (u.length < 3){ toast('Username too short (min 3)','err'); return; }
       if (!em || em.indexOf('@')<0){ toast('Enter a valid email','err'); return; }
-      if (pw.length < 6){ toast('Password must be 6+ characters','err'); return; }
+      var isGoogle = !!S._pendingGoogle;
+      if (!isGoogle && pw.length < 6){ toast('Password must be 6+ characters','err'); return; }
 
       signupBtn.disabled = true; signupBtn.textContent = 'Creating...';
 
       try {
         var { data:exU } = await sb.from('profiles').select('id').eq('username', u).limit(1);
-        if (exU && exU.length){ toast('@'+u+' taken','err'); signupBtn.disabled=false; signupBtn.textContent='Create account'; return; }
+        if (exU && exU.length){ toast('@'+u+' already taken','err'); signupBtn.disabled=false; signupBtn.textContent='Create account'; return; }
         var { data:exN } = await sb.from('profiles').select('id').ilike('name', n).limit(1);
-        if (exN && exN.length){ toast('Name "'+n+'" taken','err'); signupBtn.disabled=false; signupBtn.textContent='Create account'; return; }
-        var { data:exE } = await sb.from('profiles').select('id').ilike('email', em).limit(1);
-        if (exE && exE.length){ toast('Email already registered. Sign in instead.','err'); signupBtn.disabled=false; signupBtn.textContent='Create account'; return; }
-      } catch(e){ console.error(e); }
+        if (exN && exN.length){ toast('Name "'+n+'" already taken','err'); signupBtn.disabled=false; signupBtn.textContent='Create account'; return; }
+      } catch(e){}
 
-      var pwHash = await sha256(pw);
-      var isAdminAttempt = (em === ADMIN_EMAIL || u === ADMIN_USERNAME || n.toLowerCase() === ADMIN_NAME.toLowerCase());
-      if (isAdminAttempt && pw !== ADMIN_PASSWORD){ toast('Admin password is incorrect','err'); signupBtn.disabled=false; signupBtn.textContent='Create account'; return; }
+      var pwHash = pw ? await sha256(pw) : null;
+      var isAdminAttempt = (em === ADMIN_EMAIL) || (u === ADMIN_USERNAME) || (n.toLowerCase() === ADMIN_NAME);
 
       var payload = {
-        name:n, username:u, email:em, password_hash:pwHash,
-        avatar:S._pickAvatar, pic:'', is_admin:isAdminAttempt
+        name:n, username:u, email:em,
+        password_hash: pwHash,
+        avatar: S._pickAvatar,
+        pic: (S._pendingGoogle && S._pendingGoogle.picture) ? S._pendingGoogle.picture : '',
+        is_admin: isAdminAttempt
       };
+      if (S._pendingGoogle && S._pendingGoogle.gid){ payload.id = S._pendingGoogle.gid; }
 
       try {
         var { data, error } = await sb.from('profiles').insert(payload).select().single();
@@ -937,35 +1005,33 @@
         }
         S.me.id = data.id; S.me.name = n; S.me.username = u; S.me.email = em;
         S.me.avatar = S._pickAvatar; S.me.is_admin = isAdminAttempt;
+        if (S._pendingGoogle && S._pendingGoogle.picture) S.me.pic = S._pendingGoogle.picture;
         saveUser();
         try { await sb.from('coins').insert({ profile_id:S.me.id, balance:500000 }); } catch(e){}
         try { await sb.from('player_stats').insert({ profile_id:S.me.id, health:100, hunger:100, energy:100 }); } catch(e){}
-        toast('Account created. Welcome, ' + n + (isAdminAttempt?' (admin)':''),'ok');
+        S._pendingGoogle = null;
+        toast('Welcome, ' + n + (isAdminAttempt?' (admin)':''),'ok');
         signupBtn.disabled=false; signupBtn.textContent='Create account';
         await initSession();
       } catch(e){ toast('Error: ' + (e.message||''),'err'); signupBtn.disabled=false; signupBtn.textContent='Create account'; }
     };
 
     if (signOutBtn) signOutBtn.onclick = function(){
-      showConfirm('Sign out?', 'You will need your password to sign back in.', function(yes){
+      showConfirm('Sign out?', 'You will need to sign in again.', function(yes){
         if (!yes) return;
+        try { if (typeof google !== 'undefined' && google.accounts){ google.accounts.id.disableAutoSelect(); } } catch(e){}
         clearUser(); location.reload();
       });
     };
   }
 
-  /* SESSION */
+  /* ============ SESSION ============ */
   async function initSession(){
     showView('home');
     $('bottomNav').style.display = 'flex';
     $('appHeader').style.display = 'flex';
-    if (S.me.is_admin){
-      $('adminChip').style.display = 'flex';
-      $('adminAppTile').style.display = 'flex';
-    } else {
-      $('adminChip').style.display = 'none';
-      $('adminAppTile').style.display = 'none';
-    }
+    if (S.me.is_admin){ $('adminChip').style.display = 'flex'; $('adminAppTile').style.display = 'flex'; }
+    else { $('adminChip').style.display = 'none'; $('adminAppTile').style.display = 'none'; }
     renderIdentity();
     await ensureCoins();
     await ensureStats();
@@ -1005,7 +1071,6 @@
       if (!data || !data.length){ await sb.from('player_stats').insert({ profile_id:S.me.id, health:100, hunger:100, energy:100 }); }
     } catch(e){}
   }
-
   async function loadCoins(){
     if (!S.me.id) return;
     try {
@@ -1016,7 +1081,6 @@
       renderContactAdminBanner();
     } catch(e){}
   }
-
   async function loadStats(){
     if (!S.me.id) return;
     try {
@@ -1041,7 +1105,6 @@
     var huP = $('hungerPill'); if (huP) huP.className = 'chip stat' + (S.stats.hunger<40?' warn':'');
     var eP = $('energyPill'); if (eP) eP.className = 'chip stat' + (S.stats.energy<40?' warn':'');
   }
-
   function startStatDecay(){
     setInterval(async function(){
       if (!S.me.id || S._hospitalized) return;
@@ -1054,7 +1117,6 @@
       if (S.stats.health <= 0 && !S._hospitalized) await hospitalize();
     }, 60000);
   }
-
   async function hospitalize(){
     S._hospitalized = true;
     var fine = Math.min(5000, S.coins);
@@ -1068,7 +1130,6 @@
     $('hospText').textContent = 'Your health hit 0. Hospital took ' + fmtN(fine) + ' and you are out for 5 minutes. Eat something next time!';
     $('hospitalModal').classList.add('show');
   }
-
   async function pingPresence(){
     if (!S.me.id) return;
     try { await sb.from('presence').upsert({ profile_id:S.me.id, name:S.me.name, last_ping:new Date().toISOString() }, { onConflict:'profile_id' }); } catch(e){}
@@ -1087,7 +1148,6 @@
     $('onlineCount').textContent = o; $('liveNow').textContent = o;
     setTimeout(driftCounts, 15000);
   }
-
   async function loadVisited(){
     if (!S.me.id) return;
     try { var { data } = await sb.from('visits').select('spot_id').eq('profile_id', S.me.id); S.myVisited = (data||[]).map(function(v){return v.spot_id;}).filter(function(v,i,a){return a.indexOf(v)===i;}); } catch(e){}
@@ -1108,7 +1168,6 @@
     if (!S.me.id) return;
     try { var { data } = await sb.from('owned_houses').select('house_id').eq('profile_id', S.me.id); S.houses = (data||[]).map(function(h){return h.house_id;}); } catch(e){}
   }
-
   async function loadBroadcasts(){
     try {
       var { data } = await sb.from('broadcasts').select('*').order('created_at',{ascending:false}).limit(3);
@@ -1120,7 +1179,6 @@
       }).join('');
     } catch(e){}
   }
-
   async function addCoins(amount, reason){
     if (!S.me.id) return;
     S.coins += amount;
@@ -1130,7 +1188,6 @@
     if (reason && amount !== 0) toast((amount>0?'+':'') + fmtN(amount) + ' — ' + reason, amount>0?'ok':'info');
     renderContactAdminBanner();
   }
-
   function renderContactAdminBanner(){
     var el = $('contactAdminBanner'); if (!el) return;
     if (S.coins >= 500){ el.innerHTML = ''; return; }
@@ -1141,7 +1198,6 @@
       '<button class="cab-btn" type="button" onclick="window.open(\'https://wa.me/' + WHATSAPP_ADMIN + '?text=' + msg + '\',\'_blank\')">' +
       I.wa + ' Contact Admin on WhatsApp</button></div>';
   }
-
   function renderIdentity(){
     if (!S.me.name) return;
     var c = avColor(S.me.avatar);
@@ -1159,7 +1215,6 @@
     var pe = $('pemail'); if (pe) pe.textContent = S.me.email || '';
     if (S.me.is_admin){ $('adminChip').style.display = 'flex'; $('adminAppTile').style.display = 'flex'; }
   }
-
   async function recordVisit(spotId){
     if (!S.me.id) return false;
     var sp = SPOTS.find(function(s){return s.id===spotId;});
@@ -1178,7 +1233,6 @@
     } catch(e){}
     return true;
   }
-
   async function award(id){
     if (!S.me.id || S.badges.indexOf(id) > -1) return;
     var b = BADGES.find(function(x){return x.id===id;});
@@ -1194,7 +1248,6 @@
     if (S.houses.length >= 3) await award('landlord');
     if (S.jobsDoneToday.length >= 10) await award('worker');
   }
-
   async function completeTask(taskId){
     if (!S.me.id) return;
     var t = TASKS.find(function(x){return x.id===taskId;});
@@ -1212,7 +1265,6 @@
       return out;
     } catch(e){ return {}; }
   }
-
   function renderCats(){
     var b = $('catsBar'); b.innerHTML = '';
     CATS.forEach(function(c){
@@ -1234,13 +1286,9 @@
       if (sp.nw) cls += ' new';
       if (S.myVisited.indexOf(sp.id) > -1) cls += ' visited';
       var b = document.createElement('button');
-      b.className = cls;
-      b.type = 'button';
+      b.className = cls; b.type = 'button';
       var meta = sp.fee > 0 ? '<span class="fee">fee ' + fmtN(sp.fee) + '</span>' : '<span class="num">free entry</span>';
-      b.innerHTML = '<div class="spot-icon">' + (I[sp.i]||I.pin) + '</div>' +
-        '<div class="name">' + esc(sp.n) + '</div>' +
-        '<div class="tagline">' + esc(sp.t) + '</div>' +
-        '<div class="meta">' + meta + '</div>';
+      b.innerHTML = '<div class="spot-icon">' + (I[sp.i]||I.pin) + '</div><div class="name">' + esc(sp.n) + '</div><div class="tagline">' + esc(sp.t) + '</div><div class="meta">' + meta + '</div>';
       b.onclick = function(){ enterSpot(sp); };
       g.appendChild(b);
     });
@@ -1250,7 +1298,6 @@
     $('potdName').textContent = p.n;
     $('potdCard').onclick = function(){ enterSpot(p); };
   }
-
   async function enterSpot(sp){
     if (S._hospitalized){ toast('You are hospitalized. Wait it out.','err'); return; }
     if (S.stats.energy < 10){ toast('Too tired. Eat or rest first.','err'); return; }
@@ -1273,7 +1320,6 @@
   }
   function switchTab(t){ document.querySelectorAll('.room-tab').forEach(function(x){ x.classList.toggle('active', x.dataset.pane===t); }); document.querySelectorAll('.room-pane').forEach(function(p){ p.classList.toggle('active', p.id==='pane-'+t); }); }
   document.querySelectorAll('.room-tab').forEach(function(t){ t.onclick = function(){ switchTab(t.dataset.pane); }; });
-
   async function refreshMembers(){
     if (!S.currentSpot) return;
     try {
@@ -1291,7 +1337,6 @@
       $('chatCount').textContent = list.length;
     } catch(e){}
   }
-
   async function loadMsgs(){
     if (!S.currentSpot) return;
     try {
@@ -1320,7 +1365,6 @@
     if (whoEl) whoEl.onclick = function(){ showUser(from); };
   }
   function addSys(t){ var d = document.createElement('div'); d.className = 'msg system'; d.textContent = t; $('chatBody').appendChild(d); $('chatBody').scrollTop = $('chatBody').scrollHeight; }
-
   async function sendChat(){
     if (S._hospitalized){ toast('Hospitalized','err'); return; }
     var t = ($('chatInput').value||'').trim();
@@ -1335,7 +1379,6 @@
   }
   $('chatSend').onclick = sendChat;
   $('chatInput').addEventListener('keydown', function(e){ if (e.key==='Enter') sendChat(); });
-
   $('photoBtn').onclick = function(){ $('photoInput').click(); };
   $('photoInput').onchange = function(){
     var f = $('photoInput').files && $('photoInput').files[0];
@@ -1353,7 +1396,6 @@
     };
     r.readAsDataURL(f);
   };
-
   var rec=null, ch=[], recording=false;
   $('voiceBtn').onclick = function(){
     if (recording){ try{ rec.stop(); }catch(e){} return; }
@@ -1379,7 +1421,6 @@
       setTimeout(function(){ if (recording) try{ rec.stop(); }catch(e){} }, 20000);
     }).catch(function(){ toast('Mic denied','err'); });
   };
-
   function subscribeMsgs(spotId){
     if (S.realtimeSub) try{ sb.removeChannel(S.realtimeSub); }catch(e){}
     S.realtimeSub = sb.channel('room-'+spotId).on('postgres_changes', { event:'INSERT', schema:'public', table:'messages', filter:'spot_id=eq.'+spotId }, function(p){
@@ -1387,7 +1428,6 @@
       if (m.name !== S.me.name) addMsg(m.name, m.text, false, m.kind, m.image_url, m.audio_url, m.created_at, m.is_deleted);
     }).subscribe();
   }
-
   async function loadJobs(){
     if (!S.currentSpot) return;
     var l = $('jobsList'); l.innerHTML = '<div class="shimmer" style="height:60px;margin-bottom:8px"></div><div class="shimmer" style="height:60px"></div>';
@@ -1402,11 +1442,7 @@
         var canDo = !done && !S._hospitalized && S.stats.energy >= (j.min_energy||20) && S.stats.hunger > 0;
         var el = document.createElement('div');
         el.className = 'qa-item';
-        el.innerHTML = '<div class="q">' + esc(j.title) + '</div>' +
-          '<div class="a" style="color:#c4b5fd">' + esc(j.description||'') + '</div>' +
-          '<div class="from" style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">' +
-          '<span>Pay: <b style="color:var(--gold-bright)">' + fmtN(pay) + '</b> · Energy: ' + (j.min_energy||20) + '</span>' +
-          '<button class="ev-rsvp' + (done?' rsvpd':'') + '" style="margin:0;padding:8px 14px" data-job="' + j.id + '"' + (!canDo?' disabled':'') + '>' + (done?'DONE TODAY':'WORK') + '</button></div>';
+        el.innerHTML = '<div class="q">' + esc(j.title) + '</div><div class="a" style="color:#c4b5fd">' + esc(j.description||'') + '</div><div class="from" style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><span>Pay: <b style="color:var(--gold-bright)">' + fmtN(pay) + '</b> · Energy: ' + (j.min_energy||20) + '</span><button class="ev-rsvp' + (done?' rsvpd':'') + '" style="margin:0;padding:8px 14px" data-job="' + j.id + '"' + (!canDo?' disabled':'') + '>' + (done?'DONE TODAY':'WORK') + '</button></div>';
         l.appendChild(el);
       });
       l.querySelectorAll('button[data-job]').forEach(function(b){
@@ -1436,7 +1472,6 @@
     } catch(e){ l.innerHTML = '<div class="empty">Could not load jobs.</div>'; }
   }
   $('refreshJobsBtn').onclick = loadJobs;
-
   async function loadQA(){
     if (!S.currentSpot) return;
     var l = $('qaList'); l.innerHTML = '';
@@ -1457,7 +1492,6 @@
       try { await sb.from('qa').insert({ spot_id:S.currentSpot.id, profile_id:S.me.id, name:S.me.name, question:t }); await addCoins(100,'asked'); loadQA(); } catch(e){}
     });
   };
-
   async function loadPhotos(){
     if (!S.currentSpot) return;
     var g = $('photoGrid'); g.innerHTML = '';
@@ -1486,7 +1520,6 @@
     };
     inp.click();
   };
-
   async function loadEvents(){
     if (!S.currentSpot) return;
     var l = $('eventsList'); l.innerHTML = '';
@@ -1519,7 +1552,6 @@
       try { await sb.from('events').insert({ spot_id:S.currentSpot.id, title:p[0], description:p[2]||'', starts_at:when.toISOString(), host_name:S.me.name }); await addCoins(200,'event'); loadEvents(); } catch(e){}
     });
   };
-
   $('shareRoomBtn').onclick = function(){
     if (!S.currentSpot) return;
     var url = location.origin + location.pathname + '?spot=' + S.currentSpot.id;
@@ -1534,7 +1566,6 @@
     showView('home'); $('bottomNav').style.display = 'flex'; updateNav('home');
   }
   $('backBtn').onclick = backBtnFn;
-
   var _cb = null;
   function openInput(title, hint, ph, cb){
     $('inputTitle').textContent = title;
@@ -1548,7 +1579,6 @@
   $('inputSubmit').onclick = function(){ var t = ($('inputField').value||'').trim(); if (_cb) _cb(t); $('inputModal').classList.remove('show'); _cb = null; };
   $('inputClose').onclick = function(){ $('inputModal').classList.remove('show'); };
   $('inputModal').onclick = function(e){ if (e.target === $('inputModal')) $('inputModal').classList.remove('show'); };
-
   function showConfirm(title, text, cb){
     $('cfmTitle').textContent = title;
     $('cfmText').textContent = text;
@@ -1556,7 +1586,6 @@
     $('cfmYes').onclick = function(){ $('confirmModal').classList.remove('show'); cb(true); };
     $('cfmNo').onclick = function(){ $('confirmModal').classList.remove('show'); cb(false); };
   }
-
   function showUser(name){
     sb.from('profiles').select('*').eq('name', name).limit(1).then(function(res){
       var p = res.data && res.data[0];
@@ -1580,7 +1609,6 @@
   }
   $('userClose').onclick = function(){ $('userModal').classList.remove('show'); };
   $('userModal').onclick = function(e){ if (e.target === $('userModal')) $('userModal').classList.remove('show'); };
-
   async function openDM(name){
     $('dmTitle').textContent = 'Message ' + name;
     S._dmPeer = name;
@@ -1611,7 +1639,6 @@
   $('dmInput').addEventListener('keydown', function(e){ if (e.key==='Enter') $('dmSend').click(); });
   $('dmClose').onclick = function(){ $('dmModal').classList.remove('show'); };
   $('dmModal').onclick = function(e){ if (e.target === $('dmModal')) $('dmModal').classList.remove('show'); };
-
   function openSendMoney(prefillUser){
     $('smUser').value = prefillUser || '';
     $('smAmount').value = '';
@@ -1645,7 +1672,6 @@
       renderContactAdminBanner();
     } catch(e){ toast('Send failed: ' + (e.message||''),'err'); }
   };
-
   function updateNav(v){ document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.view===v); }); }
   document.querySelectorAll('.nav-btn').forEach(function(b){
     b.onclick = function(){
@@ -1657,7 +1683,6 @@
       if (v==='profile'){ showView('profile'); renderProfile(); }
     };
   });
-
   function renderPhone(){
     var t = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Africa/Lagos'});
     $('phoneTime').textContent = t;
@@ -1669,7 +1694,6 @@
     $('phoneHome').style.display = 'none';
     $('phoneApp').style.display = 'block';
     var s = $('phoneScreen');
-
     if (app === 'notes'){
       s.innerHTML = '<div style="font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;font-weight:800;margin-bottom:10px">Notes</div><textarea id="noteF" style="width:100%;min-height:180px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;color:#fff;font-family:inherit;font-size:13px;outline:none;resize:vertical" placeholder="Write anything..."></textarea>';
       try { $('noteF').value = localStorage.getItem('eko_note') || ''; } catch(e){}
@@ -1692,22 +1716,17 @@
         var msg = encodeURIComponent('Hi admin, I want to buy coins on Eko Hangout. My username is @' + S.me.username + '.');
         window.open('https://wa.me/' + WHATSAPP_ADMIN + '?text=' + msg, '_blank');
       };
-    } else if (app === 'market'){
-      renderMarket(s);
-    } else if (app === 'news'){
-      renderNews(s);
-    } else if (app === 'weather'){
+    } else if (app === 'market'){ renderMarket(s); }
+    else if (app === 'news'){ renderNews(s); }
+    else if (app === 'weather'){
       s.innerHTML = '<div style="font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;font-weight:800;margin-bottom:10px">Lagos Weather</div>' +
         '<div style="font-size:34px;font-weight:900;color:var(--gold-bright);letter-spacing:-1px">31°C</div>' +
         '<div style="font-size:13px;color:var(--sub);margin-top:6px">Humid · Light breeze · Chance of rain at 4pm</div>' +
         '<div style="margin-top:14px;font-size:11px;color:var(--dimmer)">Lagos: 6:00 sunrise, 18:30 sunset</div>';
-    } else if (app === 'jobs'){
-      renderJobsApp(s);
-    } else if (app === 'tasks'){
-      renderTasks(s);
-    } else if (app === 'rankings'){
-      renderRankings(s);
-    } else if (app === 'search'){
+    } else if (app === 'jobs'){ renderJobsApp(s); }
+    else if (app === 'tasks'){ renderTasks(s); }
+    else if (app === 'rankings'){ renderRankings(s); }
+    else if (app === 'search'){
       s.innerHTML = '<div style="font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;font-weight:800;margin-bottom:10px">Find People</div><input type="text" id="userSearch" placeholder="Search username..." style="width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:#fff;font-family:inherit;font-size:13.5px;outline:none;margin-bottom:12px"><div id="searchResults"></div>';
       $('userSearch').oninput = async function(){
         var q = $('userSearch').value.trim().toLowerCase();
@@ -1736,7 +1755,6 @@
     }
   }
   $('phoneBack').onclick = function(){ renderPhone(); };
-
   async function renderMarket(s){
     s.innerHTML = '<div style="font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;font-weight:800;margin-bottom:10px">Market</div><div class="shimmer" style="height:60px;margin-bottom:8px"></div><div class="shimmer" style="height:60px"></div>';
     try {
@@ -1774,7 +1792,6 @@
       });
     } catch(e){ s.innerHTML = '<div class="empty">Failed to load market.</div>'; }
   }
-
   function renderNews(s){
     if (S.newsTimer) clearInterval(S.newsTimer);
     s.innerHTML = '<div style="font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;font-weight:800;margin-bottom:10px">Eko News · Live</div>' +
@@ -1787,7 +1804,6 @@
       if (h){ h.style.opacity='0'; setTimeout(function(){ h.textContent = NEWS[S.newsIdx]; h.style.opacity='1'; }, 200); }
     }, 30000);
   }
-
   async function renderJobsApp(s){
     s.innerHTML = '<div style="font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;font-weight:800;margin-bottom:10px">Jobs Board</div><div class="shimmer" style="height:60px;margin-bottom:8px"></div>';
     try {
@@ -1810,7 +1826,6 @@
       s.innerHTML = html;
     } catch(e){ s.innerHTML = '<div class="empty">Failed to load jobs.</div>'; }
   }
-
   async function renderTasks(s){
     var status = await getTaskStatus();
     var html = '<div style="font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;font-weight:800;margin-bottom:10px">Daily Tasks</div>';
@@ -1821,7 +1836,6 @@
     html += '<div style="font-size:11px;color:var(--dimmer);margin-top:14px">Tasks reset every day at midnight.</div>';
     s.innerHTML = html;
   }
-
   async function renderRankings(s){
     s.innerHTML = '<div style="font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;font-weight:800;margin-bottom:10px">Rankings</div><div class="shimmer" style="height:60px;margin-bottom:8px"></div>';
     try {
@@ -1844,7 +1858,6 @@
       s.innerHTML = html || '<div class="empty">No rankings yet.</div>';
     } catch(e){ s.innerHTML = '<div class="empty">Failed to load rankings.</div>'; }
   }
-
   function renderAdminApp(s){
     s.innerHTML = '<div class="admin-panel"><h4>Admin Panel</h4>' +
       '<div class="admin-grid">' +
@@ -1856,7 +1869,6 @@
       '<button class="admin-btn danger" id="aClearBroadcast" type="button">Clear Broadcasts</button>' +
       '</div></div>' +
       '<div style="font-size:12px;color:var(--sub);line-height:1.6">You have full admin powers. Use them wisely.</div>';
-
     $('aBroadcast').onclick = function(){
       openInput('Broadcast to all users','Message will appear on every home screen','Type your message...',async function(t){
         if (!t) return;
@@ -1926,7 +1938,6 @@
       });
     };
   }
-
   async function renderProfile(){
     renderIdentity();
     $('pCoins').textContent = Number(S.coins).toLocaleString();
@@ -1988,7 +1999,6 @@
       } catch(e){ toast('Purchase failed','err'); }
     });
   }
-
   async function runNEPA(){
     if (!S.me.id || S.me.is_admin) return;
     try {
@@ -2005,7 +2015,6 @@
     } catch(e){}
   }
   $('nepaOk').onclick = function(){ $('nepaModal').classList.remove('show'); };
-
   $('picInput').onchange = function(){
     var f = $('picInput').files && $('picInput').files[0];
     if (!f) return;
@@ -2019,7 +2028,6 @@
     };
     r.readAsDataURL(f);
   };
-
   function checkURL(){
     var p = new URLSearchParams(location.search);
     var sp = p.get('spot');
@@ -2028,24 +2036,19 @@
       if (s){ try { history.replaceState({}, '', location.pathname); } catch(e){} setTimeout(function(){ enterSpot(s); }, 400); }
     }
   }
-
   function boot(){
     console.log('Eko Hangout booting...');
     attachAuthHandlers();
     renderAvatarPicker();
-    if (loadUser() && S.me.id){
-      initSession().catch(function(e){ console.error('Init error', e); });
-    } else {
-      showView('auth');
-    }
+    initGoogle();
+    if (loadUser() && S.me.id){ initSession().catch(function(e){ console.error('Init error', e); }); }
+    else { showView('auth'); }
   }
-
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', boot);
   } else {
     boot();
   }
-
 })();
 </script>
 
