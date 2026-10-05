@@ -880,12 +880,12 @@
     try {
       var p = parseJwt(resp.credential);
       if (!p){ toast('Google sign-in failed','err'); return; }
-      var gid = p.sub;
       var email = (p.email || '').toLowerCase();
       var picture = p.picture || '';
       var gname = p.given_name || p.name || '';
 
-      var { data: existing } = await sb.from('profiles').select('*').or('id.eq.' + gid + ',email.eq.' + email).limit(1);
+      // Match by email only — Google IDs are numeric, not UUIDs
+      var { data: existing } = await sb.from('profiles').select('*').ilike('email', email).limit(1);
 
       if (existing && existing.length){
         var prof = existing[0];
@@ -906,7 +906,8 @@
         return;
       }
 
-      S._pendingGoogle = { gid:gid, email:email, picture:picture, gname:gname };
+      // New Google user — prefill signup form, no numeric ID stored
+      S._pendingGoogle = { email:email, picture:picture, gname:gname };
       toast('Pick a username to finish signup','info');
       showView('signup');
       renderAvatarPicker();
@@ -916,7 +917,7 @@
         var nm = document.getElementById('suName');
         if (nm && gname) nm.value = gname.substring(0,16);
       }, 100);
-    } catch(e){ console.error(e); toast('Google sign-in error','err'); }
+    } catch(e){ console.error(e); toast('Google sign-in error: ' + (e.message||''),'err'); }
   }
 
   /* ============ AUTH ============ */
@@ -983,6 +984,7 @@
       var pwHash = pw ? await sha256(pw) : null;
       var isAdminAttempt = (em === ADMIN_EMAIL) || (u === ADMIN_USERNAME) || (n.toLowerCase() === ADMIN_NAME);
 
+      // NOTE: No id is set. Postgres generates a fresh UUID for every account.
       var payload = {
         name:n, username:u, email:em,
         password_hash: pwHash,
@@ -990,7 +992,6 @@
         pic: (S._pendingGoogle && S._pendingGoogle.picture) ? S._pendingGoogle.picture : '',
         is_admin: isAdminAttempt
       };
-      if (S._pendingGoogle && S._pendingGoogle.gid){ payload.id = S._pendingGoogle.gid; }
 
       try {
         var { data, error } = await sb.from('profiles').insert(payload).select().single();
